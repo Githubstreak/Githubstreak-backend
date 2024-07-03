@@ -91,7 +91,7 @@ async function fetchUsersFromGitHub() {
         // Define the GitHub API endpoint and headers
         const apiUrl = 'https://api.github.com/users';
         const headers = {
-          'Accept': 'application/vnd.github+json',
+          'Accept': '',
           'Authorization': ''
         };
     
@@ -101,7 +101,7 @@ async function fetchUsersFromGitHub() {
     
         // Fetch repository data for each user
         const usersWithRepos = await Promise.all(users.map(async (user) => {
-          const reposResponse = await axios.get(`https://api.github.com/users/${user.login}/repos`, { headers });
+          const reposResponse = await axios.get(``, { headers });
           return { ...user, repos: reposResponse.data };
         }));
     
