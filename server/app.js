@@ -27,8 +27,8 @@ app.use(passport.session());
 
 // Configure GitHub OAuth strategy
 passport.use(new GitHubStrategy({
-  clientID: '203d1dae0f975543389d',
-  clientSecret: 'e65c79b6f85728e79e176b2ff22067feb9d2fb67',
+  clientID: '',
+  clientSecret: '',
   callbackURL: 'http://localhost:3000//auth/github/callback'
 },
 (accessToken, refreshToken, profile, done) => {
