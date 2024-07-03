@@ -16,7 +16,7 @@ app.use(function(req, res, next) {
 
 // Configure session middleware
 app.use(session({
-  secret: '203d1dae0f975543389d',
+  secret: '',
   resave: false,
   saveUninitialized: true
 }));
