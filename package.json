@@ -1,0 +1,22 @@
+{
+  "name": "githubstreak-backend",
+  "version": "1.0.0",
+  "description": "The backend server for Github streak",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Edmondakwasi/Githubstreak-backend.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Edmondakwasi/Githubstreak-backend/issues"
+  },
+  "homepage": "https://github.com/Edmondakwasi/Githubstreak-backend#readme",
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
