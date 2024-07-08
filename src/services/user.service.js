@@ -1,35 +1,21 @@
-import express from "express";
 import { createClerkClient } from "@clerk/clerk-sdk-node";
 import { Octokit } from "octokit";
-import cors from "cors";
-import "dotenv/config";
-
-const app = express();
-
-app.use(
-  cors({
-    origin: "*",
-    methods: ["GET"],
-  }),
-);
-
-const port = process.env.PORT || 3001;
+import { getDateDiff, fmtDateAsIso } from "../utils/index.js";
 
 const clerkClient = createClerkClient({
   secretKey: process.env.CLERK_SECRET_KEY,
 });
 
-const getDateDiff = (start, end) =>
-  (new Date(end).getTime() - new Date(start).getTime()) / (1000 * 60 * 60 * 24);
-
-app.get("/", async (req, res) => {
-  const { id: userId } = req.query;
-
-  if (!userId) {
-    res.status(400).json({ error: "Id of the user is required" });
-    return;
-  }
-
+/**
+ * Retrieves the total contributions, highest and current streak of the user
+ * @param {string} userId - The id of the user provided by clerk
+ * @returns {Promise<{
+ * totalContributions: number
+ * highestStreak: {range: string; count: number}
+ * currentStreak: {range: string; count: number}
+ * }>} Stats of the user
+ * */
+export const fetchUserStats = async (userId) => {
   const provider = "oauth_github";
 
   const response = await clerkClient.users.getUserOauthAccessToken(
@@ -46,14 +32,8 @@ app.get("/", async (req, res) => {
   } = await octokit.rest.users.getAuthenticated();
 
   const dateJoined = new Date(created_at);
-  dateJoined.setHours(0);
-  dateJoined.setMinutes(0);
-  dateJoined.setSeconds(0);
 
   const today = new Date();
-  today.setHours(0);
-  today.setMinutes(0);
-  today.setSeconds(0);
 
   const firstYearOnGh = dateJoined.getFullYear();
 
@@ -63,6 +43,7 @@ app.get("/", async (req, res) => {
 
   let currentStreakStart = "";
   let currentStreakEnd = "";
+
   let totalContributions = 0;
 
   let highestStreak = {
@@ -71,21 +52,14 @@ app.get("/", async (req, res) => {
   };
 
   for (let year of yearsOnGh) {
-    const start = new Date(year, 0, 1);
-    start.setHours(0);
-    start.setMinutes(0);
-    start.setSeconds(0);
-
-    const end = new Date(year, 11, 31);
-    end.setHours(23);
-    end.setMinutes(59);
-    end.setSeconds(59);
+    const start = fmtDateAsIso(`${year}-01-01`);
+    const end = fmtDateAsIso(`${year}-12-31`);
 
     const contributions = await octokit.graphql(`
     query {
         user(login: "${login}") {
             createdAt
-            contributionsCollection(from: "${start.toISOString()}", to: "${end.toISOString()}") {
+            contributionsCollection(from: "${start}", to: "${end}") {
                 contributionCalendar {
                     weeks {
                         contributionDays {
@@ -106,6 +80,9 @@ app.get("/", async (req, res) => {
 
       for (let i = 0; i < contributionDays.length; i++) {
         const { contributionCount, date } = contributionDays[i];
+
+        if (currentStreakStart === "") currentStreakStart = date;
+        if (currentStreakEnd === "") currentStreakEnd = date;
 
         if (contributionCount > 0) {
           totalContributions += contributionCount;
@@ -137,13 +114,9 @@ app.get("/", async (req, res) => {
     count: getDateDiff(currentStreakStart, currentStreakEnd),
   };
 
-  res.json({
+  return {
     highestStreak,
     currentStreak,
     totalContributions,
-  });
-});
-
-app.listen(port, () => {
-  console.log(`Server listening on port ${port}`);
-});
+  };
+};
