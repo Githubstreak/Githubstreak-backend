@@ -9,11 +9,6 @@ const clerkClient = createClerkClient({
 /**
  * Retrieves the total contributions, highest and current streak of the user
  * @param {string} userId - The id of the user provided by clerk
- * @returns {Promise<{
- * totalContributions: number
- * highestStreak: {range: string; count: number}
- * currentStreak: {range: string; count: number}
- * }>} Stats of the user
  * */
 export const fetchUserStats = async (userId) => {
   const provider = "oauth_github";
@@ -115,8 +110,34 @@ export const fetchUserStats = async (userId) => {
   };
 
   return {
+    username: login,
     highestStreak,
     currentStreak,
     totalContributions,
   };
+};
+
+/**
+ * Get users a sorted leaderboard
+ * based on users contributions
+ * */
+export const fetchLeaderboard = async () => {
+  const usersList = await clerkClient.users.getUserList();
+
+  const usersStatsPromise = usersList.data.map((user) =>
+    fetchUserStats(user.id),
+  );
+
+  const usersStats = await Promise.all(usersStatsPromise);
+
+  const leaderboard = usersStats
+    .sort((a, b) => b.totalContributions - a.totalContributions)
+    .map((user, rank) => ({
+      rank: rank + 1,
+      username: user.username,
+      contributions: user.totalContributions,
+      currentStreak: user.currentStreak,
+    }));
+
+  return leaderboard;
 };
