@@ -23,18 +23,10 @@ export const fetchUserStats = async (userId) => {
   const octokit = new Octokit({ auth: token });
 
   const {
-    data: { login, created_at },
+    data: { login },
   } = await octokit.rest.users.getAuthenticated();
 
-  const dateJoined = new Date(created_at);
-
-  const today = new Date();
-
-  const firstYearOnGh = dateJoined.getFullYear();
-
-  const yearsOnGh = new Array(today.getFullYear() - firstYearOnGh + 1) // Include first year in count
-    .fill(firstYearOnGh - 1) // Start all indexes with one year before the first year
-    .map((year, index) => year + index + 1); // Account for 0 index
+  const currentYear = new Date().getFullYear();
 
   let currentStreakStart = "";
   let currentStreakEnd = "";
@@ -46,11 +38,10 @@ export const fetchUserStats = async (userId) => {
     count: 0,
   };
 
-  for (let year of yearsOnGh) {
-    const start = fmtDateAsIso(`${year}-01-01`);
-    const end = fmtDateAsIso(`${year}-12-31`);
+  const start = fmtDateAsIso(`${currentYear}-01-01`);
+  const end = fmtDateAsIso(`${currentYear}-12-31`);
 
-    const contributions = await octokit.graphql(`
+  const contributions = await octokit.graphql(`
     query {
         user(login: "${login}") {
             createdAt
@@ -68,38 +59,37 @@ export const fetchUserStats = async (userId) => {
     }
    `);
 
-    const { contributionCalendar } = contributions.user.contributionsCollection;
+  const { contributionCalendar } = contributions.user.contributionsCollection;
 
-    for (let week of contributionCalendar.weeks) {
-      const contributionDays = week.contributionDays;
+  for (let week of contributionCalendar.weeks) {
+    const contributionDays = week.contributionDays;
 
-      for (let i = 0; i < contributionDays.length; i++) {
-        const { contributionCount, date } = contributionDays[i];
+    for (let i = 0; i < contributionDays.length; i++) {
+      const { contributionCount, date } = contributionDays[i];
 
-        if (currentStreakStart === "") currentStreakStart = date;
-        if (currentStreakEnd === "") currentStreakEnd = date;
+      if (currentStreakStart === "") currentStreakStart = date;
+      if (currentStreakEnd === "") currentStreakEnd = date;
 
-        if (contributionCount > 0) {
-          totalContributions += contributionCount;
+      if (contributionCount > 0) {
+        totalContributions += contributionCount;
 
-          const dateDiff = getDateDiff(currentStreakEnd, date);
+        const dateDiff = getDateDiff(currentStreakEnd, date);
 
-          if (dateDiff === 0 || dateDiff === 1) {
-            currentStreakEnd = date;
-          } else {
-            currentStreakStart = date;
-            currentStreakEnd = date;
-          }
+        if (dateDiff === 0 || dateDiff === 1) {
+          currentStreakEnd = date;
+        } else {
+          currentStreakStart = date;
+          currentStreakEnd = date;
         }
+      }
 
-        const streakCount = getDateDiff(currentStreakStart, currentStreakEnd);
+      const streakCount = getDateDiff(currentStreakStart, currentStreakEnd);
 
-        if (streakCount > highestStreak.count) {
-          highestStreak = {
-            range: `${currentStreakStart}-${currentStreakEnd}`,
-            count: streakCount,
-          };
-        }
+      if (streakCount > highestStreak.count) {
+        highestStreak = {
+          range: `${currentStreakStart}-${currentStreakEnd}`,
+          count: streakCount,
+        };
       }
     }
   }
