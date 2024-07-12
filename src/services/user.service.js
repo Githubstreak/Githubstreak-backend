@@ -122,7 +122,7 @@ export const fetchLeaderboard = async () => {
   const usersStats = await Promise.all(usersStatsPromise);
 
   const leaderboard = usersStats
-    .sort((a, b) => b.currentStreak.count - a.currentStreak.count)
+    .sort((a, b) => b.totalContributions - a.totalContributions)
     .map((user, rank) => ({
       rank: rank + 1,
       username: user.username,
