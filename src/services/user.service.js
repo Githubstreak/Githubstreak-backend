@@ -23,7 +23,7 @@ export const fetchUserStats = async (userId) => {
   const octokit = new Octokit({ auth: token });
 
   const {
-    data: { login },
+    data: { login, avatar_url },
   } = await octokit.rest.users.getAuthenticated();
 
   const currentYear = new Date().getFullYear();
@@ -101,6 +101,7 @@ export const fetchUserStats = async (userId) => {
 
   return {
     username: login,
+    avatar: avatar_url,
     highestStreak,
     currentStreak,
     totalContributions,
@@ -125,6 +126,7 @@ export const fetchLeaderboard = async () => {
     .map((user, rank) => ({
       rank: rank + 1,
       username: user.username,
+      avatar: user.avatar,
       contributions: user.totalContributions,
       currentStreak: user.currentStreak,
     }));
