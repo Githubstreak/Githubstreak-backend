@@ -38,8 +38,12 @@ export const fetchUserStats = async (userId) => {
     count: 0,
   };
 
-  const start = fmtDateAsIso(`${currentYear}-01-01`);
-  const end = fmtDateAsIso(`${currentYear}-12-31`);
+  const today = new Date();
+  const last7Days = new Date(today);
+  last7Days.setDate(today.getDate() - 7);
+
+  const start = fmtDateAsIso(last7Days.toString());
+  const end = fmtDateAsIso(today.toString());
 
   const contributions = await octokit.graphql(`
     query {
