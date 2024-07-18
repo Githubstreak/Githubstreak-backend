@@ -113,7 +113,7 @@ export const fetchUserStats = async (userId) => {
  * based on users contributions
  * */
 export const fetchLeaderboard = async () => {
-  const usersList = await clerkClient.users.getUserList();
+  const usersList = await clerkClient.users.getUserList({ limit: 100 });
 
   const usersStatsPromise = usersList.data.map((user) =>
     fetchUserStats(user.id),
