@@ -121,16 +121,17 @@ export const fetchLeaderboard = async () => {
     fetchUserStats(user.id),
   );
 
-  const usersStats = await Promise.all(usersStatsPromise);
+  const usersStats = await Promise.allSettled(usersStatsPromise);
 
   const leaderboard = usersStats
-    .sort((a, b) => b.totalContributions - a.totalContributions)
-    .map((user, rank) => ({
+    .filter((promise) => promise.status === "fulfilled")
+    .sort((a, b) => b.value.totalContributions - a.value.totalContributions)
+    .map((promise, rank) => ({
       rank: rank + 1,
-      username: user.username,
-      avatar: user.avatar,
-      contributions: user.totalContributions,
-      currentStreak: user.currentStreak,
+      username: promise.value.username,
+      avatar: promise.value.avatar,
+      contributions: promise.value.totalContributions,
+      currentStreak: promise.value.currentStreak,
     }));
 
   return leaderboard;
