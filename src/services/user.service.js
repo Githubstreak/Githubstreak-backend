@@ -22,12 +22,6 @@ export const fetchUserStats = async (userId) => {
 
   const octokit = new Octokit({ auth: token });
 
-  const {
-    data: { login, avatar_url },
-  } = await octokit.rest.users.getAuthenticated();
-
-  const currentYear = new Date().getFullYear();
-
   let currentStreakStart = "";
   let currentStreakEnd = "";
 
@@ -47,7 +41,9 @@ export const fetchUserStats = async (userId) => {
 
   const contributions = await octokit.graphql(`
     query {
-        user(login: "${login}") {
+        viewer {
+            login
+            avatarUrl
             createdAt
             contributionsCollection(from: "${start}", to: "${end}") {
                 contributionCalendar {
@@ -61,9 +57,11 @@ export const fetchUserStats = async (userId) => {
             }
         }
     }
-   `);
+`);
 
-  const { contributionCalendar } = contributions.user.contributionsCollection;
+  const { contributionsCollection, login, avatarUrl } = contributions.viewer;
+
+  const { contributionCalendar } = contributionsCollection;
 
   for (let week of contributionCalendar.weeks) {
     const contributionDays = week.contributionDays;
@@ -105,7 +103,7 @@ export const fetchUserStats = async (userId) => {
 
   return {
     username: login,
-    avatar: avatar_url,
+    avatar: avatarUrl,
     highestStreak,
     currentStreak,
     totalContributions,
