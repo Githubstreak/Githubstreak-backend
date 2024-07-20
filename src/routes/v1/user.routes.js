@@ -9,7 +9,7 @@ import { cacheTime } from "../../utils/constants.js";
 const userRouter = express.Router();
 const { middleware: cache } = apicache;
 
-userRouter.get("/stat", getUserStats);
+userRouter.get("/stat", cache(cacheTime.API_CACHE_TIME), getUserStats);
 userRouter.get("/leaderboard", cache(cacheTime.API_CACHE_TIME), getLeaderboard);
 
 export default userRouter;
