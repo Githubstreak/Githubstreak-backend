@@ -26,6 +26,8 @@ export const fetchUserStats = async (userId) => {
     // Get time difference in minutes from milliseconds
     const timeDiff = (now.getTime() - updatedAt.getTime()) / (1000 * 60);
 
+    console.log("Time diff ", timeDiff);
+
     if (timeDiff < cacheTime.MAX_SNAPSHOT_TIME) return snapshot;
   }
 
@@ -142,6 +144,10 @@ export const fetchLeaderboard = async () => {
   );
 
   const usersStats = await Promise.allSettled(usersStatsPromise);
+
+  usersStats
+    .filter((promise) => promise.status === "rejected")
+    .forEach((promise) => console.log(promise.reason));
 
   const leaderboard = usersStats
     .filter((promise) => promise.status === "fulfilled")
