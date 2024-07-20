@@ -9,8 +9,8 @@ export class Database {
     instance = this;
   }
 
-  #checkConn() {
-    if (!this.conn) throw new Error("No connection to db");
+  async #checkConn() {
+    if (!this.conn) await this.connect();
   }
 
   static getInstance() {
@@ -35,7 +35,7 @@ export class Database {
   }
 
   async getSnapshot(userId) {
-    this.#checkConn();
+    await this.#checkConn();
 
     try {
       const snapshot = await this.conn
@@ -49,7 +49,7 @@ export class Database {
   }
 
   async saveSnapshot(userId, snapshot) {
-    this.#checkConn();
+    await this.#checkConn();
 
     try {
       const currentTime = new Date();
