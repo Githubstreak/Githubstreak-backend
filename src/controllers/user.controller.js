@@ -1,4 +1,5 @@
 import { fetchUserStats, fetchLeaderboard } from "../services/user.service.js";
+import { cacheTime } from "../utils/constants.js";
 
 export const getUserStats = async (req, res) => {
   const { id: userId } = req.query;
@@ -20,6 +21,10 @@ export const getUserStats = async (req, res) => {
 export const getLeaderboard = async (_, res) => {
   try {
     const leaderboard = await fetchLeaderboard();
+    res.setHeader(
+      "Cache-Control",
+      `public, max-age=${cacheTime.BROWSER_CACHE_TIME}`,
+    );
     res.json(leaderboard);
   } catch (e) {
     console.log(e);

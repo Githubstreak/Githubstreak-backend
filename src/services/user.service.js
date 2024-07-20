@@ -2,12 +2,11 @@ import { createClerkClient } from "@clerk/clerk-sdk-node";
 import { Octokit } from "octokit";
 import { getDateDiff, fmtDateAsIso } from "../utils/index.js";
 import { Database } from "../lib/database.js";
+import { cacheTime } from "../utils/constants.js";
 
 const clerkClient = createClerkClient({
   secretKey: process.env.CLERK_SECRET_KEY,
 });
-
-const MAX_SNAPSHOT_TIME = 45; //Minutes
 
 /**
  * Retrieves the total contributions, highest and current streak of the user
@@ -27,7 +26,7 @@ export const fetchUserStats = async (userId) => {
     // Get time difference in minutes from milliseconds
     const timeDiff = (now.getTime() - updatedAt.getTime()) / (1000 * 60);
 
-    if (timeDiff < MAX_SNAPSHOT_TIME) return snapshot;
+    if (timeDiff < cacheTime.MAX_SNAPSHOT_TIME) return snapshot;
   }
 
   const response = await clerkClient.users.getUserOauthAccessToken(
