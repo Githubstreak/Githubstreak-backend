@@ -1,10 +1,13 @@
 import { createClerkClient } from "@clerk/clerk-sdk-node";
 import { Octokit } from "octokit";
 import { getDateDiff, fmtDateAsIso } from "../utils/index.js";
+import { Database } from "../lib/database.js";
 
 const clerkClient = createClerkClient({
   secretKey: process.env.CLERK_SECRET_KEY,
 });
+
+const MAX_SNAPSHOT_TIME = 45; //Minutes
 
 /**
  * Retrieves the total contributions, highest and current streak of the user
@@ -12,6 +15,20 @@ const clerkClient = createClerkClient({
  * */
 export const fetchUserStats = async (userId) => {
   const provider = "oauth_github";
+
+  const db = Database.getInstance();
+
+  const snapshot = await db.getSnapshot(userId);
+
+  if (snapshot) {
+    const updatedAt = new Date(snapshot.updatedAt);
+    const now = new Date();
+
+    // Get time difference in minutes from milliseconds
+    const timeDiff = (now.getTime() - updatedAt.getTime()) / (1000 * 60);
+
+    if (timeDiff < MAX_SNAPSHOT_TIME) return snapshot;
+  }
 
   const response = await clerkClient.users.getUserOauthAccessToken(
     userId,
@@ -101,13 +118,17 @@ export const fetchUserStats = async (userId) => {
     count: getDateDiff(currentStreakStart, currentStreakEnd),
   };
 
-  return {
+  const newSnapshot = {
     username: login,
     avatar: avatarUrl,
     highestStreak,
     currentStreak,
     totalContributions,
   };
+
+  await db.saveSnapshot(userId, newSnapshot);
+
+  return newSnapshot;
 };
 
 /**
