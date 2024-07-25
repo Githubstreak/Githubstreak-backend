@@ -10,7 +10,8 @@
     {
       "src": "/(.*)",
       "dest": "/src/app.js",
-      "source": "/(.*)", "destination": "/"
+      "source": "/(.*)", "destination": "/","status":200
+      
     }
   ]
 }
