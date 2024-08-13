@@ -22,49 +22,37 @@ export class Database {
   }
 
   async connect() {
-    try {
-      if (mongoose.connection.readyState > 1) return;
+    if (mongoose.connection.readyState > 1) return;
 
-      const { connection } = await mongoose.connect(process.env.DB_URI);
+    const { connection } = await mongoose.connect(process.env.DB_URI);
 
-      console.log(`DB Connected - ${connection.host}`);
-      this.conn = connection;
-    } catch (error) {
-      throw error;
-    }
+    console.log(`DB Connected - ${connection.host}`);
+    this.conn = connection;
   }
 
   async getSnapshot(userId) {
     await this.#checkConn();
 
-    try {
-      const snapshot = await this.conn
-        .collection("snapshots")
-        .findOne({ _id: userId });
+    const snapshot = await this.conn
+      .collection("snapshots")
+      .findOne({ _id: userId });
 
-      return snapshot;
-    } catch (error) {
-      throw error;
-    }
+    return snapshot;
   }
 
   async saveSnapshot(userId, snapshot) {
     await this.#checkConn();
 
-    try {
-      const currentTime = new Date();
+    const currentTime = new Date();
 
-      await this.conn.collection("snapshots").updateOne(
-        { _id: userId },
-        {
-          $set: { ...snapshot, updatedAt: currentTime },
-          $setOnInsert: { createdAt: currentTime },
-        },
-        { upsert: true },
-      );
-    } catch (error) {
-      throw error;
-    }
+    await this.conn.collection("snapshots").updateOne(
+      { _id: userId },
+      {
+        $set: { ...snapshot, updatedAt: currentTime },
+        $setOnInsert: { createdAt: currentTime },
+      },
+      { upsert: true },
+    );
   }
 }
 
