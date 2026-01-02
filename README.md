@@ -6,10 +6,10 @@ All endpoints are GET-only and CORS-open to any origin. Data may be cached by th
 
 ### GET /v1/users/stat?id={clerkUserId}
 
-- Purpose: Return the user’s recent contribution stats.
+- Purpose: Return the user’s recent contribution stats for frontend streak display.
 - Window: Only the last 7 calendar days (UTC-midnight bounded).
-- Response: `{ username, avatar, highestStreak: { range, count }, currentStreak: { range, count }, totalContributions }`.
-- Streak definition: `count = (endDate - startDate) in days` (non-inclusive), so one day of contributions yields `count = 0`; two consecutive days yields `count = 1`.
+- Response: `{ username, avatar, currentStreak: { count }, longestStreak: { count }, contributions, lastContributionDate }` where `lastContributionDate` is an ISO 8601 string (or null if none in window).
+- Streak definition: counts are the number of consecutive contribution days (inclusive). A single contribution day yields `count = 1`.
 - Caching: Snapshot reuse up to 60 minutes; HTTP caching up to 1 hour.
 - Errors: 400 if `id` missing; 500 otherwise.
 
