@@ -12,7 +12,7 @@ const clerkClient = createClerkClient({
  * Retrieves the total contributions, highest and current streak of the user
  * @param {string} userId - The id of the user provided by clerk
  * */
-export const fetchUserStats = async (userId) => {
+export const fetchUserStats = async (userId, { refresh = false } = {}) => {
   const provider = "oauth_github";
 
   const db = Database.getInstance();
@@ -24,9 +24,10 @@ export const fetchUserStats = async (userId) => {
     snapshot.contributions !== undefined &&
     snapshot.currentStreak?.count !== undefined &&
     snapshot.longestStreak?.count !== undefined &&
-    Object.prototype.hasOwnProperty.call(snapshot, "lastContributionDate");
+    Object.prototype.hasOwnProperty.call(snapshot, "lastContributionDate") &&
+    Array.isArray(snapshot.contributionDays);
 
-  if (snapshot && hasNewShape) {
+  if (snapshot && hasNewShape && !refresh) {
     const updatedAt = new Date(snapshot.updatedAt);
     const now = new Date();
 
@@ -47,10 +48,12 @@ export const fetchUserStats = async (userId) => {
 
   let currentStreakCount = 0;
   let longestStreakCount = 0;
-  let currentStreakEnd = "";
+  let currentStreakStart = null;
+  let currentStreakEnd = null;
 
   let totalContributions = 0;
   let lastContributionDate = null;
+  let contributionDays = [];
 
   const today = new Date();
   const last7Days = new Date(today);
@@ -83,42 +86,81 @@ export const fetchUserStats = async (userId) => {
 
   const { contributionCalendar } = contributionsCollection;
 
-  for (let week of contributionCalendar.weeks) {
-    const contributionDays = week.contributionDays;
+  const allContributionDays = contributionCalendar.weeks.flatMap(
+    (week) => week.contributionDays
+  );
 
-    for (let i = 0; i < contributionDays.length; i++) {
-      const { contributionCount, date } = contributionDays[i];
+  for (let i = 0; i < allContributionDays.length; i++) {
+    const { contributionCount, date } = allContributionDays[i];
 
-      if (contributionCount > 0) {
-        totalContributions += contributionCount;
-        lastContributionDate = new Date(date).toISOString();
+    if (contributionCount > 0) {
+      totalContributions += contributionCount;
+      contributionDays.push(date);
 
-        const diffFromEnd = currentStreakEnd
-          ? getDateDiff(currentStreakEnd, date)
-          : null;
-
-        if (diffFromEnd !== null && diffFromEnd >= 0 && diffFromEnd <= 1) {
-          currentStreakCount += 1;
-        } else {
-          currentStreakCount = 1;
-        }
-
-        currentStreakEnd = date;
-
-        if (currentStreakCount > longestStreakCount) {
-          longestStreakCount = currentStreakCount;
-        }
+      if (!lastContributionDate || date > lastContributionDate) {
+        lastContributionDate = date;
       }
+    }
+  }
+
+  contributionDays = contributionDays
+    .sort((a, b) => b.localeCompare(a))
+    .filter((value, index, self) => index === self.indexOf(value));
+
+  const sortedForStreak = [...contributionDays].sort((a, b) =>
+    a.localeCompare(b)
+  );
+
+  let longestStart = null;
+  let longestEnd = null;
+
+  for (let i = 0; i < sortedForStreak.length; i++) {
+    const date = sortedForStreak[i];
+
+    if (i === 0) {
+      currentStreakStart = date;
+      currentStreakEnd = date;
+      currentStreakCount = 1;
+    } else {
+      const prevDate = sortedForStreak[i - 1];
+      const diffFromPrev = getDateDiff(prevDate, date);
+
+      if (diffFromPrev === 1) {
+        currentStreakCount += 1;
+        currentStreakEnd = date;
+      } else {
+        currentStreakStart = date;
+        currentStreakEnd = date;
+        currentStreakCount = 1;
+      }
+    }
+
+    if (currentStreakCount > longestStreakCount) {
+      longestStreakCount = currentStreakCount;
+      longestStart = currentStreakStart;
+      longestEnd = currentStreakEnd;
     }
   }
 
   const newSnapshot = {
     username: login,
     avatar: avatarUrl,
-    currentStreak: { count: currentStreakCount },
-    longestStreak: { count: longestStreakCount },
+    currentStreak: {
+      count: currentStreakCount,
+      startDate: currentStreakStart
+        ? new Date(currentStreakStart).toISOString()
+        : null,
+    },
+    longestStreak: {
+      count: longestStreakCount,
+      startDate: longestStart ? new Date(longestStart).toISOString() : null,
+      endDate: longestEnd ? new Date(longestEnd).toISOString() : null,
+    },
     contributions: totalContributions,
-    lastContributionDate,
+    lastContributionDate: lastContributionDate
+      ? new Date(lastContributionDate).toISOString()
+      : null,
+    contributionDays,
   };
 
   await db.saveSnapshot(userId, newSnapshot);

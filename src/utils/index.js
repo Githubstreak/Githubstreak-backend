@@ -14,9 +14,7 @@ export const getDateDiff = (start, end) =>
  * */
 export const fmtDateAsIso = (date) => {
   const newDate = new Date(date);
-  newDate.setHours(0);
-  newDate.setMinutes(0);
-  newDate.setSeconds(0);
+  newDate.setUTCHours(0, 0, 0, 0);
 
   return newDate.toISOString();
 };
