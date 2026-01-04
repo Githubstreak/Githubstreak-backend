@@ -4,13 +4,13 @@
 
 All endpoints are GET-only and CORS-open to any origin. Data may be cached by the server and proxies for up to 1 hour; user stats may also be served from a Mongo snapshot up to 60 minutes old.
 
-### GET /v1/users/stat?id={clerkUserId}
+### GET /v1/users/stat?id={clerkUserId}[&refresh=true]
 
 - Purpose: Return the user’s recent contribution stats for frontend streak display.
 - Window: Only the last 7 calendar days (UTC-midnight bounded).
-- Response: `{ username, avatar, currentStreak: { count }, longestStreak: { count }, contributions, lastContributionDate }` where `lastContributionDate` is an ISO 8601 string (or null if none in window).
+- Response: `{ username, avatar, currentStreak: { count, startDate }, longestStreak: { count, startDate, endDate }, contributions, lastContributionDate, contributionDays }` where all dates are ISO 8601 strings in UTC; `contributionDays` lists dates with contributions (latest first).
 - Streak definition: counts are the number of consecutive contribution days (inclusive). A single contribution day yields `count = 1`.
-- Caching: Snapshot reuse up to 60 minutes; HTTP caching up to 1 hour.
+- Caching: Snapshot reuse up to 60 minutes unless `refresh=true`, which forces a fresh GitHub fetch and snapshot update; HTTP caching up to 1 hour.
 - Errors: 400 if `id` missing; 500 otherwise.
 
 ### GET /v1/users/leaderboard

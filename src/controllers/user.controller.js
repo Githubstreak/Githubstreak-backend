@@ -2,7 +2,7 @@ import { fetchUserStats, fetchLeaderboard } from "../services/user.service.js";
 import { cacheTime } from "../utils/constants.js";
 
 export const getUserStats = async (req, res) => {
-  const { id: userId } = req.query;
+  const { id: userId, refresh } = req.query;
 
   if (!userId) {
     res.status(400).json({ error: "Id of the user is required" });
@@ -10,7 +10,9 @@ export const getUserStats = async (req, res) => {
   }
 
   try {
-    const stats = await fetchUserStats(userId);
+    const stats = await fetchUserStats(userId, {
+      refresh: refresh === "true",
+    });
     res.json(stats);
   } catch (e) {
     console.log(e);
@@ -23,7 +25,7 @@ export const getLeaderboard = async (_, res) => {
     const leaderboard = await fetchLeaderboard();
     res.setHeader(
       "Cache-Control",
-      `public, max-age=${cacheTime.BROWSER_CACHE_TIME}`,
+      `public, max-age=${cacheTime.BROWSER_CACHE_TIME}`
     );
     res.json(leaderboard);
   } catch (e) {
