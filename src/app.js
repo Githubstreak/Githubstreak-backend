@@ -3,19 +3,23 @@ import "dotenv/config";
 import express from "express";
 import database from "./lib/database.js";
 import v1Api from "./routes/index.js";
+import badgeRouter from "./routes/v1/badge.routes.js";
 
 const app = express();
 
 app.use(
   cors({
     origin: "*",
-    methods: ["GET"],
-  }),
+    methods: ["GET", "POST", "PATCH"],
+  })
 );
+
+app.use(express.json());
 
 const port = process.env.PORT || 3001;
 
 app.use("/v1", v1Api);
+app.use("/badge", badgeRouter);
 
 const startServer = async () => {
   try {

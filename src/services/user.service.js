@@ -95,7 +95,7 @@ export const fetchUserStats = async (userId, { refresh = false } = {}) => {
 
     if (contributionCount > 0) {
       totalContributions += contributionCount;
-      contributionDays.push(date);
+      contributionDays.push({ date, count: contributionCount });
 
       if (!lastContributionDate || date > lastContributionDate) {
         lastContributionDate = date;
@@ -103,13 +103,18 @@ export const fetchUserStats = async (userId, { refresh = false } = {}) => {
     }
   }
 
+  // Sort by date descending and dedupe by date
   contributionDays = contributionDays
-    .sort((a, b) => b.localeCompare(a))
-    .filter((value, index, self) => index === self.indexOf(value));
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .filter(
+      (item, index, self) =>
+        index === self.findIndex((t) => t.date === item.date)
+    );
 
-  const sortedForStreak = [...contributionDays].sort((a, b) =>
-    a.localeCompare(b)
-  );
+  // Extract dates for streak calculation
+  const sortedForStreak = contributionDays
+    .map((d) => d.date)
+    .sort((a, b) => a.localeCompare(b));
 
   let longestStart = null;
   let longestEnd = null;
@@ -197,4 +202,15 @@ export const fetchLeaderboard = async () => {
     }));
 
   return leaderboard;
+};
+
+/**
+ * Fetch public user stats by GitHub username
+ * @param {string} username - GitHub username
+ * @returns {Promise<object|null>} User stats or null if not found
+ */
+export const fetchPublicUserStats = async (username) => {
+  const db = Database.getInstance();
+  const snapshot = await db.getSnapshotByUsername(username);
+  return snapshot || null;
 };

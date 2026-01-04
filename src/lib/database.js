@@ -51,7 +51,68 @@ export class Database {
         $set: { ...snapshot, updatedAt: currentTime },
         $setOnInsert: { createdAt: currentTime },
       },
-      { upsert: true },
+      { upsert: true }
+    );
+  }
+
+  async getSnapshotByUsername(username) {
+    await this.#checkConn();
+
+    const snapshot = await this.conn
+      .collection("snapshots")
+      .findOne({ username });
+
+    return snapshot;
+  }
+
+  async getUserFreeze(userId) {
+    await this.#checkConn();
+
+    const freeze = await this.conn
+      .collection("freezes")
+      .findOne({ _id: userId });
+
+    return freeze || { usedFreezes: 0, lastFreezeUsedAt: null };
+  }
+
+  async useFreeze(userId) {
+    await this.#checkConn();
+
+    const currentTime = new Date();
+
+    await this.conn.collection("freezes").updateOne(
+      { _id: userId },
+      {
+        $inc: { usedFreezes: 1 },
+        $set: { lastFreezeUsedAt: currentTime, updatedAt: currentTime },
+        $setOnInsert: { createdAt: currentTime },
+      },
+      { upsert: true }
+    );
+  }
+
+  async getLastSync(userId) {
+    await this.#checkConn();
+
+    const syncRecord = await this.conn
+      .collection("syncs")
+      .findOne({ _id: userId });
+
+    return syncRecord?.lastSyncedAt || null;
+  }
+
+  async updateLastSync(userId) {
+    await this.#checkConn();
+
+    const currentTime = new Date();
+
+    await this.conn.collection("syncs").updateOne(
+      { _id: userId },
+      {
+        $set: { lastSyncedAt: currentTime },
+        $setOnInsert: { createdAt: currentTime },
+      },
+      { upsert: true }
     );
   }
 }
