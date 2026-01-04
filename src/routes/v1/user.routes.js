@@ -2,6 +2,9 @@ import express from "express";
 import {
   getUserStats,
   getLeaderboard,
+  useFreeze,
+  syncUser,
+  getPublicUserStats,
 } from "../../controllers/user.controller.js";
 import apicache from "apicache";
 import { cacheTime } from "../../utils/constants.js";
@@ -14,12 +17,15 @@ const onlyStatus200 = (_, res) => res.statusCode === 200;
 userRouter.get(
   "/stat",
   cache(cacheTime.API_CACHE_TIME, onlyStatus200),
-  getUserStats,
+  getUserStats
 );
 userRouter.get(
   "/leaderboard",
   cache(cacheTime.API_CACHE_TIME, onlyStatus200),
-  getLeaderboard,
+  getLeaderboard
 );
+userRouter.post("/use-freeze", useFreeze);
+userRouter.post("/sync", syncUser);
+userRouter.get("/public/:username", getPublicUserStats);
 
 export default userRouter;
