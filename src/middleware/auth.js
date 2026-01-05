@@ -1,8 +1,4 @@
-import { createClerkClient } from "@clerk/clerk-sdk-node";
-
-const clerkClient = createClerkClient({
-  secretKey: process.env.CLERK_SECRET_KEY,
-});
+import { verifyToken } from "@clerk/backend";
 
 /**
  * Middleware to verify Clerk JWT tokens
@@ -23,9 +19,11 @@ export const requireAuth = async (req, res, next) => {
     const token = authHeader.split(" ")[1];
 
     // Verify the token with Clerk
-    const { sub: userId } = await clerkClient.verifyToken(token);
+    const payload = await verifyToken(token, {
+      secretKey: process.env.CLERK_SECRET_KEY,
+    });
 
-    if (!userId) {
+    if (!payload?.sub) {
       return res.status(401).json({
         error: true,
         message: "Invalid token",
@@ -34,10 +32,10 @@ export const requireAuth = async (req, res, next) => {
     }
 
     // Attach userId to request for use in controllers
-    req.auth = { userId };
+    req.auth = { userId: payload.sub };
     next();
   } catch (error) {
-    console.error("Auth error:", error);
+    console.error("Auth error:", error.message);
     return res.status(401).json({
       error: true,
       message: "Authentication failed",
@@ -55,8 +53,12 @@ export const optionalAuth = async (req, res, next) => {
 
     if (authHeader && authHeader.startsWith("Bearer ")) {
       const token = authHeader.split(" ")[1];
-      const { sub: userId } = await clerkClient.verifyToken(token);
-      req.auth = { userId };
+      const payload = await verifyToken(token, {
+        secretKey: process.env.CLERK_SECRET_KEY,
+      });
+      if (payload?.sub) {
+        req.auth = { userId: payload.sub };
+      }
     }
   } catch (error) {
     // Ignore auth errors for optional auth
