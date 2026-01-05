@@ -8,32 +8,32 @@ import {
   abandonPledge,
   getTemplates,
 } from "../../controllers/pledge.controller.js";
-import { requireAuth } from "../../middleware/auth.js";
+import { optionalAuth } from "../../middleware/auth.js";
 
 const pledgeRouter = express.Router();
 
 // GET /v1/pledges/templates - Get available pledge templates (public)
 pledgeRouter.get("/templates", getTemplates);
 
-// POST /v1/pledges - Create a new pledge (auth required)
-pledgeRouter.post("/", requireAuth, createPledge);
+// POST /v1/pledges - Create a new pledge (auth optional)
+pledgeRouter.post("/", optionalAuth, createPledge);
 
-// GET /v1/pledges/my - Get user's active and completed pledges (auth required)
-pledgeRouter.get("/my", requireAuth, getMyPledges);
+// GET /v1/pledges/my - Get user's active and completed pledges (auth optional)
+pledgeRouter.get("/my", optionalAuth, getMyPledges);
 
-// GET /v1/pledges/active - Get user's active pledge (auth required)
-pledgeRouter.get("/active", requireAuth, getActivePledge);
+// GET /v1/pledges/active - Get user's active pledge (auth optional)
+pledgeRouter.get("/active", optionalAuth, getActivePledge);
 
-// GET /v1/pledges/completed - Get user's completed pledges (auth required)
-pledgeRouter.get("/completed", requireAuth, getCompletedPledges);
+// GET /v1/pledges/completed - Get user's completed pledges (auth optional)
+pledgeRouter.get("/completed", optionalAuth, getCompletedPledges);
 
-// PUT /v1/pledges/:id/complete - Complete a pledge (auth required)
-pledgeRouter.put("/:id/complete", requireAuth, completePledge);
+// PUT /v1/pledges/:id/complete - Complete a pledge (auth optional)
+pledgeRouter.put("/:id/complete", optionalAuth, completePledge);
 
-// POST /v1/pledges/:id/complete - Complete a pledge (legacy, auth required)
-pledgeRouter.post("/:id/complete", requireAuth, completePledge);
+// POST /v1/pledges/:id/complete - Complete a pledge (legacy, auth optional)
+pledgeRouter.post("/:id/complete", optionalAuth, completePledge);
 
-// DELETE /v1/pledges/:id - Abandon a pledge (auth required)
-pledgeRouter.delete("/:id", requireAuth, abandonPledge);
+// DELETE /v1/pledges/:id - Abandon a pledge (auth optional)
+pledgeRouter.delete("/:id", optionalAuth, abandonPledge);
 
 export default pledgeRouter;

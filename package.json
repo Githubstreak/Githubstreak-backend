@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/Edmondakwasi/Githubstreak-backend#readme",
   "dependencies": {
+    "@clerk/backend": "^1.0.0",
     "@clerk/clerk-sdk-node": "^5.0.14",
     "apicache": "^1.6.3",
     "cors": "^2.8.5",
