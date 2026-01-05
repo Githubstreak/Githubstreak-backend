@@ -7,6 +7,7 @@ import {
   getPublicUserStats,
 } from "../../controllers/user.controller.js";
 import { getPublicProfileData } from "../../controllers/embed.controller.js";
+import { requireAuth, optionalAuth } from "../../middleware/auth.js";
 import apicache from "apicache";
 import { cacheTime } from "../../utils/constants.js";
 
@@ -15,19 +16,31 @@ const { middleware: cache } = apicache;
 
 const onlyStatus200 = (_, res) => res.statusCode === 200;
 
+// GET /v1/users/stat - Get user stats (auth required or userId in query)
 userRouter.get(
   "/stat",
+  optionalAuth,
   cache(cacheTime.API_CACHE_TIME, onlyStatus200),
   getUserStats
 );
+
+// GET /v1/users/leaderboard - Get leaderboard (public)
 userRouter.get(
   "/leaderboard",
   cache(cacheTime.API_CACHE_TIME, onlyStatus200),
   getLeaderboard
 );
-userRouter.post("/use-freeze", useFreeze);
-userRouter.post("/sync", syncUser);
+
+// POST /v1/users/use-freeze - Use a streak freeze (auth required)
+userRouter.post("/use-freeze", requireAuth, useFreeze);
+
+// POST /v1/users/sync - Force sync user data (auth required)
+userRouter.post("/sync", requireAuth, syncUser);
+
+// GET /v1/users/public/:username - Get public user stats
 userRouter.get("/public/:username", getPublicUserStats);
+
+// GET /v1/users/:username/profile - Get public profile data
 userRouter.get("/:username/profile", getPublicProfileData);
 
 export default userRouter;

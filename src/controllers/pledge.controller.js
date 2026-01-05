@@ -9,7 +9,8 @@ import {
 import { Database } from "../lib/database.js";
 
 export const createPledge = async (req, res) => {
-  const { userId, templateId } = req.body;
+  const userId = req.auth?.userId || req.body.userId;
+  const { templateId } = req.body;
 
   if (!userId) {
     return res.status(400).json({
@@ -52,7 +53,7 @@ export const createPledge = async (req, res) => {
 };
 
 export const getActivePledge = async (req, res) => {
-  const { userId } = req.query;
+  const userId = req.auth?.userId || req.query.userId;
 
   if (!userId) {
     return res.status(400).json({
@@ -76,7 +77,7 @@ export const getActivePledge = async (req, res) => {
 };
 
 export const getCompletedPledges = async (req, res) => {
-  const { userId } = req.query;
+  const userId = req.auth?.userId || req.query.userId;
 
   if (!userId) {
     return res.status(400).json({
@@ -99,9 +100,42 @@ export const getCompletedPledges = async (req, res) => {
   }
 };
 
+/**
+ * Get both active and completed pledges for a user
+ */
+export const getMyPledges = async (req, res) => {
+  const userId = req.auth?.userId || req.query.userId;
+
+  if (!userId) {
+    return res.status(400).json({
+      error: true,
+      message: "userId is required",
+      code: "MISSING_USER_ID",
+    });
+  }
+
+  try {
+    const [active, completed] = await Promise.all([
+      getActivePledgeService(userId),
+      getCompletedPledgesService(userId),
+    ]);
+    res.json({
+      active: active || null,
+      completed: completed || [],
+    });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({
+      error: true,
+      message: "Internal server error",
+      code: "INTERNAL_ERROR",
+    });
+  }
+};
+
 export const completePledge = async (req, res) => {
   const { id: pledgeId } = req.params;
-  const { userId } = req.body;
+  const userId = req.auth?.userId || req.body.userId;
 
   if (!userId) {
     return res.status(400).json({
@@ -145,7 +179,7 @@ export const completePledge = async (req, res) => {
 
 export const abandonPledge = async (req, res) => {
   const { id: pledgeId } = req.params;
-  const { userId } = req.body;
+  const userId = req.auth?.userId || req.body.userId;
 
   if (!userId) {
     return res.status(400).json({
