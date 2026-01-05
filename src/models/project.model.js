@@ -30,7 +30,7 @@ const projectSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
-    language: {
+    projectLanguage: {
       type: String,
       default: "",
     },
@@ -74,7 +74,7 @@ const projectSchema = new mongoose.Schema(
 
 // Indexes for search performance
 projectSchema.index({ name: "text", description: "text", owner: "text" });
-projectSchema.index({ language: 1 });
+projectSchema.index({ projectLanguage: 1 });
 projectSchema.index({ lookingForContributors: 1 });
 projectSchema.index({ submittedBy: 1 });
 projectSchema.index({ stars: -1 });

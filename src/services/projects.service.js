@@ -79,7 +79,7 @@ export const fetchGitHubRepoData = async (owner, repo) => {
       description: data.description || "",
       repoUrl: data.html_url,
       homepage: data.homepage || "",
-      language: data.language || "",
+      projectLanguage: data.language || "",
       stars: data.stargazers_count,
       forks: data.forks_count,
       watchers: data.watchers_count,
@@ -107,16 +107,16 @@ export const getProjects = async (options = {}) => {
   const {
     page = 1,
     limit = 20,
-    language,
+    projectLanguage,
     lookingForContributors,
     search,
   } = options;
 
   const query = {};
 
-  // Filter by language
-  if (language) {
-    query.language = { $regex: new RegExp(`^${language}$`, "i") };
+  // Filter by projectLanguage
+  if (projectLanguage) {
+    query.projectLanguage = { $regex: new RegExp(`^${projectLanguage}$`, "i") };
   }
 
   // Filter by looking for contributors
@@ -288,7 +288,7 @@ export const refreshProjectStats = async (id) => {
   project.forks = githubData.forks;
   project.watchers = githubData.watchers;
   project.topics = githubData.topics;
-  project.language = githubData.language;
+  project.projectLanguage = githubData.language;
   project.ownerAvatar = githubData.ownerAvatar;
 
   await project.save();
