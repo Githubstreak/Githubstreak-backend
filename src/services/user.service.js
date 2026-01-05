@@ -82,7 +82,13 @@ export const fetchUserStats = async (userId, { refresh = false } = {}) => {
     }
 `);
 
-  const { contributionsCollection, login, avatarUrl } = contributions.viewer;
+  const {
+    contributionsCollection,
+    login,
+    avatarUrl: rawAvatarUrl,
+  } = contributions.viewer;
+  // Always use high-res avatar
+  const avatarUrl = rawAvatarUrl ? `${rawAvatarUrl}?s=400` : rawAvatarUrl;
 
   const { contributionCalendar } = contributionsCollection;
 
