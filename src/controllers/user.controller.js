@@ -17,7 +17,8 @@ const calculateEarnedFreezes = (longestStreak) => {
 };
 
 export const getUserStats = async (req, res) => {
-  const { id: userId, refresh } = req.query;
+  const userId = req.auth?.userId || req.query.id;
+  const { refresh } = req.query;
 
   if (!userId) {
     res.status(400).json({ error: "Id of the user is required" });
@@ -50,7 +51,7 @@ export const getLeaderboard = async (_, res) => {
 };
 
 export const useFreeze = async (req, res) => {
-  const { userId } = req.body;
+  const userId = req.auth?.userId || req.body.userId;
 
   if (!userId) {
     res.status(400).json({
@@ -117,7 +118,7 @@ export const useFreeze = async (req, res) => {
 };
 
 export const syncUser = async (req, res) => {
-  const { userId } = req.body;
+  const userId = req.auth?.userId || req.body.userId;
 
   if (!userId) {
     res.status(400).json({

@@ -22,7 +22,7 @@ const getUserInfo = async (userId) => {
 };
 
 export const createSquad = async (req, res) => {
-  const { userId } = req.body;
+  const userId = req.auth?.userId || req.body.userId;
   const { name, weeklyGoal, isPrivate } = req.body;
 
   if (!userId) {
@@ -79,7 +79,7 @@ export const getPublicSquads = async (req, res) => {
 };
 
 export const getMySquads = async (req, res) => {
-  const { userId } = req.query;
+  const userId = req.auth?.userId || req.query.userId;
 
   if (!userId) {
     return res.status(400).json({
@@ -104,7 +104,7 @@ export const getMySquads = async (req, res) => {
 
 export const joinSquad = async (req, res) => {
   const { code } = req.params;
-  const { userId } = req.body;
+  const userId = req.auth?.userId || req.body.userId;
 
   if (!userId) {
     return res.status(400).json({
@@ -151,9 +151,61 @@ export const joinSquad = async (req, res) => {
   }
 };
 
+/**
+ * Join squad using invite code from request body
+ */
+export const joinSquadByBody = async (req, res) => {
+  const { code } = req.body;
+  const userId = req.auth?.userId || req.body.userId;
+
+  if (!userId) {
+    return res.status(400).json({
+      error: true,
+      message: "userId is required",
+      code: "MISSING_USER_ID",
+    });
+  }
+
+  if (!code) {
+    return res.status(400).json({
+      error: true,
+      message: "Invite code is required in body",
+      code: "MISSING_CODE",
+    });
+  }
+
+  try {
+    const userInfo = await getUserInfo(userId);
+    const squad = await joinSquadService(userId, userInfo, code);
+    res.json(squad);
+  } catch (e) {
+    console.error(e);
+    if (e.code) {
+      const statusCode =
+        e.code === "INVALID_INVITE_CODE"
+          ? 404
+          : e.code === "ALREADY_MEMBER"
+          ? 409
+          : e.code === "SQUAD_FULL"
+          ? 400
+          : 400;
+      return res.status(statusCode).json({
+        error: true,
+        message: e.message,
+        code: e.code,
+      });
+    }
+    res.status(500).json({
+      error: true,
+      message: "Internal server error",
+      code: "INTERNAL_ERROR",
+    });
+  }
+};
+
 export const leaveSquadController = async (req, res) => {
   const { id: squadId } = req.params;
-  const { userId } = req.body;
+  const userId = req.auth?.userId || req.body.userId;
 
   if (!userId) {
     return res.status(400).json({
