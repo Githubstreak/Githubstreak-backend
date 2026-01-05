@@ -56,10 +56,10 @@ export const fetchUserStats = async (userId, { refresh = false } = {}) => {
   let contributionDays = [];
 
   const today = new Date();
-  const last7Days = new Date(today);
-  last7Days.setDate(today.getDate() - 7);
+  const last365Days = new Date(today);
+  last365Days.setDate(today.getDate() - 365);
 
-  const start = fmtDateAsIso(last7Days.toString());
+  const start = fmtDateAsIso(last365Days.toString());
   const end = fmtDateAsIso(today.toString());
 
   const contributions = await octokit.graphql(`
@@ -147,6 +147,35 @@ export const fetchUserStats = async (userId, { refresh = false } = {}) => {
     }
   }
 
+  // Calculate weekly stats (contributions by day of week)
+  const weeklyStats = {
+    Sun: 0,
+    Mon: 0,
+    Tue: 0,
+    Wed: 0,
+    Thu: 0,
+    Fri: 0,
+    Sat: 0,
+  };
+  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+  for (const day of contributionDays) {
+    const dayOfWeek = new Date(day.date).getUTCDay();
+    weeklyStats[dayNames[dayOfWeek]] += day.count;
+  }
+
+  // Calculate monthly stats (last 12 months)
+  const monthlyStatsMap = {};
+  for (const day of contributionDays) {
+    const monthKey = day.date.substring(0, 7); // YYYY-MM
+    monthlyStatsMap[monthKey] = (monthlyStatsMap[monthKey] || 0) + day.count;
+  }
+
+  const monthlyStats = Object.entries(monthlyStatsMap)
+    .map(([month, count]) => ({ month, count }))
+    .sort((a, b) => b.month.localeCompare(a.month))
+    .slice(0, 12);
+
   const newSnapshot = {
     username: login,
     avatar: avatarUrl,
@@ -166,6 +195,8 @@ export const fetchUserStats = async (userId, { refresh = false } = {}) => {
       ? new Date(lastContributionDate).toISOString()
       : null,
     contributionDays,
+    weeklyStats,
+    monthlyStats,
   };
 
   await db.saveSnapshot(userId, newSnapshot);

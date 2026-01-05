@@ -6,6 +6,7 @@ import {
   syncUser,
   getPublicUserStats,
 } from "../../controllers/user.controller.js";
+import { getPublicProfileData } from "../../controllers/embed.controller.js";
 import apicache from "apicache";
 import { cacheTime } from "../../utils/constants.js";
 
@@ -27,5 +28,6 @@ userRouter.get(
 userRouter.post("/use-freeze", useFreeze);
 userRouter.post("/sync", syncUser);
 userRouter.get("/public/:username", getPublicUserStats);
+userRouter.get("/:username/profile", getPublicProfileData);
 
 export default userRouter;

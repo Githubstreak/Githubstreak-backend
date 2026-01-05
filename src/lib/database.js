@@ -115,6 +115,130 @@ export class Database {
       { upsert: true }
     );
   }
+
+  // ============ SQUAD METHODS ============
+
+  async createSquad(squad) {
+    await this.#checkConn();
+    const currentTime = new Date();
+    const squadDoc = {
+      ...squad,
+      createdAt: currentTime,
+      updatedAt: currentTime,
+    };
+    await this.conn.collection("squads").insertOne(squadDoc);
+    return squadDoc;
+  }
+
+  async getSquadById(squadId) {
+    await this.#checkConn();
+    return await this.conn.collection("squads").findOne({ _id: squadId });
+  }
+
+  async getSquadByCode(code) {
+    await this.#checkConn();
+    return await this.conn
+      .collection("squads")
+      .findOne({ code: code.toUpperCase() });
+  }
+
+  async getPublicSquads(page = 1, limit = 20) {
+    await this.#checkConn();
+    const skip = (page - 1) * limit;
+    const squads = await this.conn
+      .collection("squads")
+      .find({ isPrivate: false })
+      .sort({ totalStreak: -1 })
+      .skip(skip)
+      .limit(limit)
+      .toArray();
+    const total = await this.conn
+      .collection("squads")
+      .countDocuments({ isPrivate: false });
+    return { squads, total, page, limit };
+  }
+
+  async getUserSquads(userId) {
+    await this.#checkConn();
+    return await this.conn
+      .collection("squads")
+      .find({ "members.userId": userId })
+      .toArray();
+  }
+
+  async updateSquad(squadId, updates) {
+    await this.#checkConn();
+    const currentTime = new Date();
+    await this.conn.collection("squads").updateOne(
+      { _id: squadId },
+      {
+        $set: { ...updates, updatedAt: currentTime },
+      }
+    );
+  }
+
+  async deleteSquad(squadId) {
+    await this.#checkConn();
+    await this.conn.collection("squads").deleteOne({ _id: squadId });
+  }
+
+  async isSquadCodeUnique(code) {
+    await this.#checkConn();
+    const existing = await this.conn
+      .collection("squads")
+      .findOne({ code: code.toUpperCase() });
+    return !existing;
+  }
+
+  // ============ PLEDGE METHODS ============
+
+  async createPledge(pledge) {
+    await this.#checkConn();
+    const currentTime = new Date();
+    const pledgeDoc = {
+      ...pledge,
+      createdAt: currentTime,
+    };
+    await this.conn.collection("pledges").insertOne(pledgeDoc);
+    return pledgeDoc;
+  }
+
+  async getPledgeById(pledgeId) {
+    await this.#checkConn();
+    return await this.conn.collection("pledges").findOne({ _id: pledgeId });
+  }
+
+  async getActivePledge(userId) {
+    await this.#checkConn();
+    return await this.conn
+      .collection("pledges")
+      .findOne({ userId, status: "active" });
+  }
+
+  async getCompletedPledges(userId) {
+    await this.#checkConn();
+    return await this.conn
+      .collection("pledges")
+      .find({ userId, status: "completed" })
+      .toArray();
+  }
+
+  async updatePledge(pledgeId, updates) {
+    await this.#checkConn();
+    await this.conn
+      .collection("pledges")
+      .updateOne({ _id: pledgeId }, { $set: updates });
+  }
+
+  async hasCompletedTemplate(userId, templateId) {
+    await this.#checkConn();
+    const existing = await this.conn.collection("pledges").findOne({
+      userId,
+      templateId,
+      status: "completed",
+    });
+    return !!existing;
+  }
 }
 
 const database = new Database();
