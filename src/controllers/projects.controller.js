@@ -30,11 +30,11 @@ export const getContributors = async (_, res) => {
 export const listProjects = async (req, res) => {
   try {
     const { page, limit, language, lookingForContributors, search } = req.query;
-
+    // Rename language to projectLanguage for backend compatibility
     const result = await getProjects({
       page,
       limit,
-      language,
+      projectLanguage: language,
       lookingForContributors,
       search,
     });
