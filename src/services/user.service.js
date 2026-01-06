@@ -3,7 +3,8 @@ import { Octokit } from "octokit";
 import { getDateDiff, fmtDateAsIso } from "../utils/index.js";
 import { Database } from "../lib/database.js";
 import { cacheTime } from "../utils/constants.js";
-import { sendUserMilestoneEmail } from "../controllers/user.controller.js";
+// --- ADVANCED FEATURE COMMENTED OUT FOR DEBUGGING ---
+// import { sendUserMilestoneEmail } from "../controllers/user.controller.js";
 
 const clerkClient = createClerkClient({
   secretKey: process.env.CLERK_SECRET_KEY,
