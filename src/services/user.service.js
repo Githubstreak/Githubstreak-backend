@@ -3,6 +3,7 @@ import { Octokit } from "octokit";
 import { getDateDiff, fmtDateAsIso } from "../utils/index.js";
 import { Database } from "../lib/database.js";
 import { cacheTime } from "../utils/constants.js";
+import { sendUserMilestoneEmail } from "../controllers/user.controller.js";
 
 const clerkClient = createClerkClient({
   secretKey: process.env.CLERK_SECRET_KEY,
@@ -207,6 +208,23 @@ export const fetchUserStats = async (userId, { refresh = false } = {}) => {
 
   await db.saveSnapshot(userId, newSnapshot);
 
+  // Automatically send milestone emails for streaks
+  // You can add more milestones as needed
+  const user = await clerkClient.users.getUser(userId);
+  const userEmail = user.emailAddresses?.[0]?.emailAddress;
+  if (userEmail) {
+    const streakMilestones = [7, 30, 100];
+    for (const milestone of streakMilestones) {
+      // If user just reached a milestone (exact count)
+      if (newSnapshot.currentStreak?.count === milestone) {
+        await sendUserMilestoneEmail(
+          userEmail,
+          `${milestone}-day streak`,
+          newSnapshot
+        );
+      }
+    }
+  }
   return newSnapshot;
 };
 

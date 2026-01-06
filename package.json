@@ -21,6 +21,7 @@
   "dependencies": {
     "@clerk/backend": "^1.0.0",
     "@clerk/clerk-sdk-node": "^5.0.14",
+    "@sendgrid/mail": "^8.1.6",
     "apicache": "^1.6.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
