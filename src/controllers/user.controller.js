@@ -1,12 +1,16 @@
+<<<<<<< HEAD
   fetchUserStats,
   fetchLeaderboard,
   fetchPublicUserStats,
 } from "../services/user.service.js";
+=======
+>>>>>>> b2c1e2581521375f395141c8bfb98aa45a804821
 import {
   fetchUserStats,
   fetchLeaderboard,
   fetchPublicUserStats,
 } from "../services/user.service.js";
+<<<<<<< HEAD
 import { sendMilestoneEmail } from "../utils/sendgrid.js";
 /**
  * Send milestone email to user when they achieve a milestone
@@ -44,6 +48,8 @@ export const sendUserMilestoneEmail = async (userEmail, milestone, stats) => {
     console.error('Error sending milestone email:', err);
   }
 };
+=======
+>>>>>>> b2c1e2581521375f395141c8bfb98aa45a804821
 import { cacheTime } from "../utils/constants.js";
 import { Database } from "../lib/database.js";
 
