@@ -3,8 +3,7 @@ import {
   fetchLeaderboard,
   fetchPublicUserStats,
 } from "../services/user.service.js";
-import { cacheTime } from "../utils/constants.js";
-import { Database } from "../lib/database.js";
+// ...existing code...
 import { cacheTime } from "../utils/constants.js";
 import { Database } from "../lib/database.js";
 
