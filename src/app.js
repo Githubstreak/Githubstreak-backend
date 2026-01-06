@@ -7,9 +7,11 @@ import badgeRouter from "./routes/v1/badge.routes.js";
 
 const app = express();
 
+// Restrict CORS to frontend domain for security
 app.use(
   cors({
-    origin: "*",
+    origin: "https://www.ggithubstreak.com",
+    credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
