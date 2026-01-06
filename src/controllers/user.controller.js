@@ -16,30 +16,32 @@ import { sendMilestoneEmail } from "../utils/sendgrid.js";
  * Send milestone email to user when they achieve a milestone
  * Call this function after updating user stats or milestones
  */
+// --- ADVANCED FEATURE COMMENTED OUT FOR DEBUGGING ---
+/*
 export const sendUserMilestoneEmail = async (userEmail, milestone, stats) => {
   const subject = `Githubstreak: You’ve unlocked a new milestone!`;
   const html = `
-    <div style="font-family: 'Segoe UI', Arial, sans-serif; background: #f7f9fa; padding: 32px; border-radius: 12px; max-width: 600px; margin: auto;">
-      <div style="text-align: center;">
+    <div style=\"font-family: 'Segoe UI', Arial, sans-serif; background: #f7f9fa; padding: 32px; border-radius: 12px; max-width: 600px; margin: auto;\">
+      <div style=\"text-align: center;\">
         <img src='https://githubstreak.com/logo.png' alt='Githubstreak Logo' style='width: 80px; margin-bottom: 16px;' />
-        <h1 style="color: #2d3748;">Congratulations!</h1>
-        <h2 style="color: #3182ce;">${milestone} Achieved</h2>
+        <h1 style=\"color: #2d3748;\">Congratulations!</h1>
+        <h2 style=\"color: #3182ce;\">${milestone} Achieved</h2>
       </div>
-      <p style="font-size: 1.1em; color: #4a5568;">Hi Githubstreaker,</p>
-      <p style="font-size: 1.1em; color: #4a5568;">You’ve just reached the <strong>${milestone}</strong> milestone on <span style="color: #3182ce; font-weight: bold;">Githubstreak</span>! Your dedication and consistency are inspiring.</p>
-      <div style="background: #e2e8f0; padding: 16px; border-radius: 8px; margin: 24px 0;">
-        <h3 style="color: #2d3748; margin-bottom: 8px;">Your Progress Snapshot</h3>
-        <ul style="list-style: none; padding: 0; color: #2d3748;">
+      <p style=\"font-size: 1.1em; color: #4a5568;\">Hi Githubstreaker,</p>
+      <p style=\"font-size: 1.1em; color: #4a5568;\">You’ve just reached the <strong>${milestone}</strong> milestone on <span style=\"color: #3182ce; font-weight: bold;\">Githubstreak</span>! Your dedication and consistency are inspiring.</p>
+      <div style=\"background: #e2e8f0; padding: 16px; border-radius: 8px; margin: 24px 0;\">
+        <h3 style=\"color: #2d3748; margin-bottom: 8px;\">Your Progress Snapshot</h3>
+        <ul style=\"list-style: none; padding: 0; color: #2d3748;\">
           <li><strong>Current Streak:</strong> ${stats.currentStreak?.count ?? 0} days</li>
           <li><strong>Longest Streak:</strong> ${stats.longestStreak?.count ?? 0} days</li>
           <li><strong>Total Contributions:</strong> ${stats.contributions ?? 0}</li>
         </ul>
       </div>
-      <p style="font-size: 1.1em; color: #4a5568;">Share your achievement with your squad, inspire others, and keep pushing your limits. Every day counts!</p>
-      <div style="text-align: center; margin-top: 32px;">
-        <a href="https://githubstreak.com/hall-of-fame" style="background: #3182ce; color: #fff; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: bold;">View Hall of Fame</a>
+      <p style=\"font-size: 1.1em; color: #4a5568;\">Share your achievement with your squad, inspire others, and keep pushing your limits. Every day counts!</p>
+      <div style=\"text-align: center; margin-top: 32px;\">
+        <a href=\"https://githubstreak.com/hall-of-fame\" style=\"background: #3182ce; color: #fff; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: bold;\">View Hall of Fame</a>
       </div>
-      <p style="margin-top: 32px; color: #718096; font-size: 0.95em; text-align: center;">Thank you for being part of the Githubstreak community.<br />— The Githubstreak Team</p>
+      <p style=\"margin-top: 32px; color: #718096; font-size: 0.95em; text-align: center;\">Thank you for being part of the Githubstreak community.<br />— The Githubstreak Team</p>
     </div>
   `;
   try {
@@ -48,6 +50,7 @@ export const sendUserMilestoneEmail = async (userEmail, milestone, stats) => {
     console.error('Error sending milestone email:', err);
   }
 };
+*/
 =======
 >>>>>>> b2c1e2581521375f395141c8bfb98aa45a804821
 import { cacheTime } from "../utils/constants.js";

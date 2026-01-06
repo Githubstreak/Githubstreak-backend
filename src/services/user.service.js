@@ -208,6 +208,8 @@ export const fetchUserStats = async (userId, { refresh = false } = {}) => {
 
   await db.saveSnapshot(userId, newSnapshot);
 
+  // --- ADVANCED FEATURE COMMENTED OUT FOR DEBUGGING ---
+  /*
   // Automatically send milestone emails for streaks
   // You can add more milestones as needed
   const user = await clerkClient.users.getUser(userId);
@@ -225,6 +227,7 @@ export const fetchUserStats = async (userId, { refresh = false } = {}) => {
       }
     }
   }
+  */
   return newSnapshot;
 };
 
