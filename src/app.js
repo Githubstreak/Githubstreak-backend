@@ -1,7 +1,3 @@
-// Root endpoint for health check or friendly message
-app.get("/", (req, res) => {
-  res.send("Githubstreak API is running.");
-});
 import cors from "cors";
 import "dotenv/config";
 import express from "express";
@@ -10,6 +6,11 @@ import v1Api from "./routes/index.js";
 import badgeRouter from "./routes/v1/badge.routes.js";
 
 const app = express();
+
+// Root endpoint for health check or friendly message
+app.get("/", (req, res) => {
+  res.send("Githubstreak API is running.");
+});
 
 // Restrict CORS to frontend domain for security
 app.use(
