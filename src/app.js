@@ -1,3 +1,7 @@
+// Root endpoint for health check or friendly message
+app.get("/", (req, res) => {
+  res.send("Githubstreak API is running.");
+});
 import cors from "cors";
 import "dotenv/config";
 import express from "express";
