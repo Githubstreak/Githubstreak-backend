@@ -1,3 +1,7 @@
+/* ADVANCED FEATURES DISABLED FOR DEBUGGING
+Milestone emails, analytics, advanced filtering, notifications, premium endpoints, complex queries are temporarily disabled.
+To restore, remove this comment block and uncomment the relevant code in services and controllers.
+*/
 import { createClerkClient } from "@clerk/clerk-sdk-node";
 import { Octokit } from "octokit";
 import { getDateDiff, fmtDateAsIso } from "../utils/index.js";

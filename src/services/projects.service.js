@@ -1,3 +1,7 @@
+/* ADVANCED FEATURES DISABLED FOR DEBUGGING
+Analytics, advanced filtering, notifications, premium endpoints, complex queries are temporarily disabled.
+To restore, remove this comment block and uncomment the relevant code in services and controllers.
+*/
 import { Octokit } from "octokit";
 import { communityProjects } from "../utils/constants.js";
 import Project from "../models/project.model.js";
@@ -126,7 +130,11 @@ export const getProjects = async (options = {}) => {
   }
 
   // Search in name, description, owner, techStack
-  if (search) {
+    /* ADVANCED FEATURE DISABLED: Analytics, advanced filtering, notifications, premium endpoints, complex queries
+    // Analytics, advanced filtering, notifications, premium endpoints, and complex queries are temporarily disabled for debugging.
+    // To restore, remove this comment block and uncomment the relevant code below.
+    */
+    // Filter by projectLanguage
     query.$or = [
       { name: { $regex: search, $options: "i" } },
       { description: { $regex: search, $options: "i" } },
