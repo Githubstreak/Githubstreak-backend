@@ -2,6 +2,7 @@
 Milestone emails, analytics, advanced filtering, notifications, premium endpoints, complex queries are temporarily disabled.
 To restore, remove this comment block and uncomment the relevant code in services and controllers.
 */
+// --- ALL ADVANCED FEATURES FULLY COMMENTED OUT BELOW ---
 import {
   fetchUserStats,
   fetchLeaderboard,
