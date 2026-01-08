@@ -15,7 +15,7 @@ app.get("/", (req, res) => {
 // Restrict CORS to frontend domain for security
 app.use(
   cors({
-    origin: "https://www.ggithubstreak.com",
+    origin: ["https://www.ggithubstreak.com", "http://localhost:3000"],
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
