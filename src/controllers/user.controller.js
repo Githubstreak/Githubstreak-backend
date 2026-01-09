@@ -49,7 +49,15 @@ export const getLeaderboard = async (_, res) => {
       "Cache-Control",
       `public, max-age=${cacheTime.BROWSER_CACHE_TIME}`
     );
-    res.json(leaderboard);
+    // Advanced: return all fields for enhanced leaderboard
+    res.json({
+      success: true,
+      data: leaderboard,
+      meta: {
+        total: leaderboard.length,
+        topUsers: leaderboard.slice(0, 3).map((u) => u.username),
+      },
+    });
   } catch (e) {
     console.log(e);
     res.status(500).json({ error: "Internal server error" });

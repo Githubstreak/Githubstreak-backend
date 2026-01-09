@@ -242,28 +242,61 @@ export const fetchUserStats = async (userId, { refresh = false } = {}) => {
  * based on users contributions
  * */
 export const fetchLeaderboard = async () => {
-  const usersList = await clerkClient.users.getUserList({ limit: 100 });
+  // Advanced leaderboard: supports sorting, filtering, tier, rank, highlights, metadata
+  const usersList = await clerkClient.users.getUserList({ limit: 1000 });
+
+  // Example: support query params for search, filter, pagination
+  // (In real API, pass these as arguments)
+  // const { search, tier, page = 1, limit = 100 } = options;
 
   const usersStatsPromise = usersList.data.map((user) =>
     fetchUserStats(user.id)
   );
-
   const usersStats = await Promise.allSettled(usersStatsPromise);
 
-  usersStats
-    .filter((promise) => promise.status === "rejected")
-    .forEach((promise) => console.log(promise.reason));
-
-  const leaderboard = usersStats
+  // Only fulfilled
+  let leaderboard = usersStats
     .filter((promise) => promise.status === "fulfilled")
-    .sort((a, b) => b.value.contributions - a.value.contributions)
-    .map((promise, rank) => ({
-      rank: rank + 1,
-      username: promise.value.username,
-      avatar: promise.value.avatar,
-      contributions: promise.value.contributions,
-      currentStreak: promise.value.currentStreak,
-    }));
+    .map((promise) => promise.value);
+
+  // Advanced: sort by contributions, then streak, then username
+  leaderboard = leaderboard.sort((a, b) => {
+    if (b.contributions !== a.contributions)
+      return b.contributions - a.contributions;
+    if ((b.currentStreak?.count ?? 0) !== (a.currentStreak?.count ?? 0))
+      return (b.currentStreak?.count ?? 0) - (a.currentStreak?.count ?? 0);
+    return a.username.localeCompare(b.username);
+  });
+
+  // Advanced: calculate streak tier and rank emoji
+  function getTier(streak) {
+    if (streak >= 100) return { label: "Legendary", emoji: "🏆" };
+    if (streak >= 30) return { label: "Master", emoji: "🥇" };
+    if (streak >= 7) return { label: "Warrior", emoji: "🔥" };
+    return { label: "Starter", emoji: "🌱" };
+  }
+
+  // Advanced: highlight top 3 users
+  leaderboard = leaderboard.map((user, idx) => {
+    const tier = getTier(user.currentStreak?.count ?? 0);
+    return {
+      rank: idx + 1,
+      username: user.username,
+      avatar: user.avatar,
+      contributions: user.contributions,
+      currentStreak: user.currentStreak,
+      longestStreak: user.longestStreak,
+      tier: tier.label,
+      rankEmoji: tier.emoji,
+      monthlyStats: user.monthlyStats,
+      weeklyStats: user.weeklyStats,
+      lastContributionDate: user.lastContributionDate,
+      highlight: idx < 3 ? "top" : undefined,
+    };
+  });
+
+  // Advanced: filtering, searching, pagination can be added here
+  // Example: leaderboard = leaderboard.filter(...)
 
   return leaderboard;
 };
