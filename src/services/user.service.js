@@ -300,52 +300,7 @@ export const fetchLeaderboard = async () => {
     // Example: leaderboard = leaderboard.filter(...)
 
     return leaderboard;
-  } catch (err) {
-    console.error("Leaderboard error:", err);
-    throw err;
-  }
 
-  // Advanced: sort by contributions, then streak, then username
-  leaderboard = leaderboard.sort((a, b) => {
-    if (b.contributions !== a.contributions)
-      return b.contributions - a.contributions;
-    if ((b.currentStreak?.count ?? 0) !== (a.currentStreak?.count ?? 0))
-      return (b.currentStreak?.count ?? 0) - (a.currentStreak?.count ?? 0);
-    return a.username.localeCompare(b.username);
-  });
-
-  // Advanced: calculate streak tier and rank emoji
-  function getTier(streak) {
-    if (streak >= 100) return { label: "Legendary", emoji: "🏆" };
-    if (streak >= 30) return { label: "Master", emoji: "🥇" };
-    if (streak >= 7) return { label: "Warrior", emoji: "🔥" };
-    return { label: "Starter", emoji: "🌱" };
-  }
-
-  // Advanced: highlight top 3 users
-  leaderboard = leaderboard.map((user, idx) => {
-    const tier = getTier(user.currentStreak?.count ?? 0);
-    return {
-      rank: idx + 1,
-      username: user.username,
-      avatar: user.avatar,
-      contributions: user.contributions,
-      currentStreak: user.currentStreak,
-      longestStreak: user.longestStreak,
-      tier: tier.label,
-      rankEmoji: tier.emoji,
-      monthlyStats: user.monthlyStats,
-      weeklyStats: user.weeklyStats,
-      lastContributionDate: user.lastContributionDate,
-      highlight: idx < 3 ? "top" : undefined,
-    };
-  });
-
-  // Advanced: filtering, searching, pagination can be added here
-  // Example: leaderboard = leaderboard.filter(...)
-
-  return leaderboard;
-};
 
 /**
  * Fetch public user stats by GitHub username
