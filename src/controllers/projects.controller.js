@@ -1,7 +1,3 @@
-/* ADVANCED FEATURES DISABLED FOR DEBUGGING
-Analytics, advanced filtering, notifications, premium endpoints, complex queries are temporarily disabled.
-To restore, remove this comment block and uncomment the relevant code in services and controllers.
-*/
 import {
   fetchContributors,
   getProjects,

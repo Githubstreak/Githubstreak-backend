@@ -1,8 +1,3 @@
-/* ADVANCED FEATURES DISABLED FOR DEBUGGING
-Milestone emails, analytics, advanced filtering, notifications, premium endpoints, complex queries are temporarily disabled.
-To restore, remove this comment block and uncomment the relevant code in services and controllers.
-*/
-// --- ALL ADVANCED FEATURES FULLY COMMENTED OUT BELOW ---
 import {
   fetchUserStats,
   fetchLeaderboard,
@@ -231,5 +226,27 @@ export const getPublicUserStats = async (req, res) => {
       error: "INTERNAL_ERROR",
       message: "Internal server error",
     });
+  }
+};
+
+/**
+ * Send milestone email to user
+ */
+export const sendUserMilestoneEmail = async (email, milestone, stats) => {
+  try {
+    const { sendMilestoneEmail } = await import("../utils/sendgrid.js");
+    const html = `
+      <h1>Congratulations!</h1>
+      <p>You've reached a ${milestone} milestone!</p>
+      <p>Current streak: ${stats.currentStreak?.count || 0} days</p>
+      <p>Keep it up!</p>
+    `;
+    await sendMilestoneEmail(
+      email,
+      `GitHub Streak Milestone: ${milestone}`,
+      html
+    );
+  } catch (error) {
+    console.error("Error sending milestone email:", error);
   }
 };

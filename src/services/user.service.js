@@ -1,15 +1,9 @@
-/* ADVANCED FEATURES DISABLED FOR DEBUGGING
-Milestone emails, analytics, advanced filtering, notifications, premium endpoints, complex queries are temporarily disabled.
-To restore, remove this comment block and uncomment the relevant code in services and controllers.
-*/
-// --- ALL ADVANCED FEATURES FULLY COMMENTED OUT BELOW ---
 import { createClerkClient } from "@clerk/clerk-sdk-node";
 import { Octokit } from "octokit";
 import { getDateDiff, fmtDateAsIso } from "../utils/index.js";
 import { Database } from "../lib/database.js";
 import { cacheTime } from "../utils/constants.js";
-// --- ADVANCED FEATURE COMMENTED OUT FOR DEBUGGING ---
-// import { sendUserMilestoneEmail } from "../controllers/user.controller.js";
+import { sendUserMilestoneEmail } from "../controllers/user.controller.js";
 
 const clerkClient = createClerkClient({
   secretKey: process.env.CLERK_SECRET_KEY,
@@ -214,8 +208,6 @@ export const fetchUserStats = async (userId, { refresh = false } = {}) => {
 
   await db.saveSnapshot(userId, newSnapshot);
 
-  // --- ADVANCED FEATURE COMMENTED OUT FOR DEBUGGING ---
-  /*
   // Automatically send milestone emails for streaks
   // You can add more milestones as needed
   const user = await clerkClient.users.getUser(userId);
@@ -233,7 +225,7 @@ export const fetchUserStats = async (userId, { refresh = false } = {}) => {
       }
     }
   }
-  */
+
   return newSnapshot;
 };
 
