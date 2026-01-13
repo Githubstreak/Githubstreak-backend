@@ -130,11 +130,7 @@ export const getProjects = async (options = {}) => {
   }
 
   // Search in name, description, owner, techStack
-    /* ADVANCED FEATURE DISABLED: Analytics, advanced filtering, notifications, premium endpoints, complex queries
-    // Analytics, advanced filtering, notifications, premium endpoints, and complex queries are temporarily disabled for debugging.
-    // To restore, remove this comment block and uncomment the relevant code below.
-    */
-    // Filter by projectLanguage
+  if (search) {
     query.$or = [
       { name: { $regex: search, $options: "i" } },
       { description: { $regex: search, $options: "i" } },

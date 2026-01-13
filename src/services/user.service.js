@@ -300,7 +300,11 @@ export const fetchLeaderboard = async () => {
     // Example: leaderboard = leaderboard.filter(...)
 
     return leaderboard;
-
+  } catch (error) {
+    console.error("Error in fetchLeaderboard:", error);
+    return [];
+  }
+};
 
 /**
  * Fetch public user stats by GitHub username
