@@ -235,18 +235,24 @@ export const fetchUserStats = async (userId, { refresh = false } = {}) => {
  * */
 export const fetchLeaderboard = async () => {
   try {
-    const db = Database.getInstance();
-    await db.checkConn();
+    // Get all users from Clerk
+    const usersList = await clerkClient.users.getUserList({ limit: 1000 });
 
-    // Get all snapshots from DB
-    const snapshots = await db.conn.collection("snapshots").find({}).toArray();
+    const usersStatsPromise = usersList.data.map((user) =>
+      fetchUserStats(user.id)
+    );
+    const usersStats = await Promise.allSettled(usersStatsPromise);
 
-    // Sort by currentStreak.count descending
-    let leaderboard = snapshots.sort((a, b) => {
+    // Only fulfilled
+    let leaderboard = usersStats
+      .filter((promise) => promise.status === "fulfilled")
+      .map((promise) => promise.value);
+
+    // Sort by currentStreak.count descending, then contributions descending
+    leaderboard = leaderboard.sort((a, b) => {
       const aStreak = a.currentStreak?.count ?? 0;
       const bStreak = b.currentStreak?.count ?? 0;
       if (bStreak !== aStreak) return bStreak - aStreak;
-      // Then by contributions descending
       if (b.contributions !== a.contributions)
         return b.contributions - a.contributions;
       return a.username.localeCompare(b.username);
