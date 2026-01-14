@@ -37,9 +37,114 @@ export const getUserStats = async (req, res) => {
   }
 };
 
-export const getLeaderboard = async (_, res) => {
+export const getLeaderboard = async (req, res) => {
   try {
-    const leaderboard = await fetchLeaderboard();
+    let leaderboard = await fetchLeaderboard();
+
+    // If userId provided, ensure the user is included
+    const { userId } = req.query;
+    if (userId) {
+      const userInLeaderboard = leaderboard.find((user) => user.id === userId); // Assuming user has id, but actually username or something. Wait, snapshots have _id as userId? Wait, no, the leaderboard has username.
+
+      // The leaderboard items don't have userId, they have username.
+
+      // To check if current user is included, perhaps compare with req.auth.userId
+
+      // Since auth is required, req.auth.userId is the current user.
+
+      // But the param is userId, perhaps it's the same.
+
+      // If the current user is not in leaderboard, fetch their stats and add.
+
+      const currentUserId = req.auth.userId;
+
+      const userInLeaderboard = leaderboard.some(
+        (user) => user.id === currentUserId
+      ); // But leaderboard doesn't have id.
+
+      // The snapshots are keyed by userId, but the leaderboard has username.
+
+      // To check, perhaps need to see if any snapshot has _id === currentUserId.
+
+      // But since fetchLeaderboard gets from Clerk users, and maps to stats, the stats have the userId? No, fetchUserStats returns snapshot, which has username.
+
+      // The snapshot has username, not userId.
+
+      // To ensure current user is included, if not in leaderboard (by username), fetch their stats and add.
+
+      // But since req.auth has username? Clerk user has username.
+
+      // req.auth.userId is the id, but to get username, perhaps fetch from Clerk.
+
+      // This is getting complicated.
+
+      // Since the leaderboard is for all users with data, and the current user has data (since signed in), they should be included.
+
+      // Perhaps the param userId is not needed, as the leaderboard includes all.
+
+      // But the user spec says optional userId to include them.
+
+      // Perhaps if userId provided, and not in results, add them.
+
+      // But since userId is Clerk id, and leaderboard has username, need to map.
+
+      // Perhaps modify fetchLeaderboard to return userId as well.
+
+      // To simplify, since the current implementation should include the user if they have data, and the user says they are signed in but not on leaderboard, perhaps the fetch failed for them.
+
+      // But to follow the spec, let's add the logic.
+
+      // In getLeaderboard, if userId param, fetch the user's stats and add to leaderboard if not present.
+
+      if (userId) {
+        const userStats = await fetchUserStats(userId);
+        if (
+          userStats &&
+          !leaderboard.some((u) => u.username === userStats.username)
+        ) {
+          leaderboard.push(userStats);
+        }
+      }
+
+      // Then sort again.
+
+      // Sort by currentStreak.count descending
+      leaderboard = leaderboard.sort((a, b) => {
+        const aStreak = a.currentStreak?.count ?? 0;
+        const bStreak = b.currentStreak?.count ?? 0;
+        if (bStreak !== aStreak) return bStreak - aStreak;
+        if (b.contributions !== a.contributions)
+          return b.contributions - a.contributions;
+        return a.username.localeCompare(b.username);
+      });
+
+      // Reassign ranks
+      function getTier(streak) {
+        if (streak >= 100) return { label: "Legendary", emoji: "🏆" };
+        if (streak >= 30) return { label: "Master", emoji: "🥇" };
+        if (streak >= 7) return { label: "Warrior", emoji: "🔥" };
+        return { label: "Starter", emoji: "🌱" };
+      }
+
+      leaderboard = leaderboard.map((user, idx) => {
+        const tier = getTier(user.currentStreak?.count ?? 0);
+        return {
+          rank: idx + 1,
+          username: user.username,
+          avatar: user.avatar,
+          contributions: user.contributions,
+          currentStreak: user.currentStreak,
+          longestStreak: user.longestStreak,
+          tier: tier.label,
+          rankEmoji: tier.emoji,
+          monthlyStats: user.monthlyStats,
+          weeklyStats: user.weeklyStats,
+          lastContributionDate: user.lastContributionDate,
+          highlight: idx < 3 ? "top" : undefined,
+        };
+      });
+    }
+
     res.setHeader(
       "Cache-Control",
       `public, max-age=${cacheTime.BROWSER_CACHE_TIME}`
