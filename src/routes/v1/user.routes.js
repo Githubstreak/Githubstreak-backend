@@ -24,13 +24,6 @@ userRouter.get(
   getUserStats
 );
 
-// GET /v1/users/leaderboard - Get leaderboard (public)
-userRouter.get(
-  "/leaderboard",
-  cache(cacheTime.API_CACHE_TIME, onlyStatus200),
-  getLeaderboard
-);
-
 // POST /v1/users/use-freeze - Use a streak freeze (auth optional)
 userRouter.post("/use-freeze", optionalAuth, useFreeze);
 

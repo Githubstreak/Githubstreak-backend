@@ -5,8 +5,12 @@ import squadRouter from "./v1/squad.routes.js";
 import pledgeRouter from "./v1/pledge.routes.js";
 import embedRouter from "./v1/embed.routes.js";
 import badgeRouter from "./v1/badge.routes.js";
+import { getLeaderboard } from "../controllers/user.controller.js";
+import { requireAuth } from "../middleware/auth.js";
 
 const v1Api = express.Router();
+
+v1Api.get("/leaderboard", requireAuth, getLeaderboard);
 
 v1Api.use("/users", userRouter);
 v1Api.use("/projects", projectsRouter);
