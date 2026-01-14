@@ -235,33 +235,24 @@ export const fetchUserStats = async (userId, { refresh = false } = {}) => {
  * */
 export const fetchLeaderboard = async () => {
   try {
-    // Advanced leaderboard: supports sorting, filtering, tier, rank, highlights, metadata
-    const usersList = await clerkClient.users.getUserList({ limit: 1000 });
+    const db = Database.getInstance();
+    await db.checkConn();
 
-    // Example: support query params for search, filter, pagination
-    // (In real API, pass these as arguments)
-    // const { search, tier, page = 1, limit = 100 } = options;
+    // Get all snapshots from DB
+    const snapshots = await db.conn.collection("snapshots").find({}).toArray();
 
-    const usersStatsPromise = usersList.data.map((user) =>
-      fetchUserStats(user.id)
-    );
-    const usersStats = await Promise.allSettled(usersStatsPromise);
-
-    // Only fulfilled
-    let leaderboard = usersStats
-      .filter((promise) => promise.status === "fulfilled")
-      .map((promise) => promise.value);
-
-    // Advanced: sort by contributions, then streak, then username
-    leaderboard = leaderboard.sort((a, b) => {
+    // Sort by currentStreak.count descending
+    let leaderboard = snapshots.sort((a, b) => {
+      const aStreak = a.currentStreak?.count ?? 0;
+      const bStreak = b.currentStreak?.count ?? 0;
+      if (bStreak !== aStreak) return bStreak - aStreak;
+      // Then by contributions descending
       if (b.contributions !== a.contributions)
         return b.contributions - a.contributions;
-      if ((b.currentStreak?.count ?? 0) !== (a.currentStreak?.count ?? 0))
-        return (b.currentStreak?.count ?? 0) - (a.currentStreak?.count ?? 0);
       return a.username.localeCompare(b.username);
     });
 
-    // Advanced: calculate streak tier and rank emoji
+    // Add rank and other fields
     function getTier(streak) {
       if (streak >= 100) return { label: "Legendary", emoji: "🏆" };
       if (streak >= 30) return { label: "Master", emoji: "🥇" };
@@ -269,7 +260,6 @@ export const fetchLeaderboard = async () => {
       return { label: "Starter", emoji: "🌱" };
     }
 
-    // Advanced: highlight top 3 users
     leaderboard = leaderboard.map((user, idx) => {
       const tier = getTier(user.currentStreak?.count ?? 0);
       return {
@@ -287,9 +277,6 @@ export const fetchLeaderboard = async () => {
         highlight: idx < 3 ? "top" : undefined,
       };
     });
-
-    // Advanced: filtering, searching, pagination can be added here
-    // Example: leaderboard = leaderboard.filter(...)
 
     return leaderboard;
   } catch (error) {
