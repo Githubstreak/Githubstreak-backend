@@ -3,7 +3,6 @@ import {
   fetchLeaderboard,
   fetchPublicUserStats,
 } from "../services/user.service.js";
-// ...existing code...
 import { cacheTime } from "../utils/constants.js";
 import { Database } from "../lib/database.js";
 
@@ -22,7 +21,11 @@ export const getUserStats = async (req, res) => {
   const { refresh } = req.query;
 
   if (!userId) {
-    res.status(400).json({ error: "Id of the user is required" });
+    res.status(400).json({
+      success: false,
+      error: "MISSING_USER_ID",
+      message: "Id of the user is required",
+    });
     return;
   }
 
@@ -30,10 +33,14 @@ export const getUserStats = async (req, res) => {
     const stats = await fetchUserStats(userId, {
       refresh: refresh === "true",
     });
-    res.json(stats);
+    res.json({ success: true, data: stats });
   } catch (e) {
-    console.log(e);
-    res.status(500).json({ error: "Internal server error" });
+    console.error(e);
+    res.status(500).json({
+      success: false,
+      error: "INTERNAL_ERROR",
+      message: "Internal server error",
+    });
   }
 };
 
@@ -41,74 +48,16 @@ export const getLeaderboard = async (req, res) => {
   try {
     let leaderboard = await fetchLeaderboard();
 
-    // If userId provided, ensure the user is included
     const { userId } = req.query;
     if (userId) {
-      const userInLeaderboard = leaderboard.find((user) => user.id === userId); // Assuming user has id, but actually username or something. Wait, snapshots have _id as userId? Wait, no, the leaderboard has username.
-
-      // The leaderboard items don't have userId, they have username.
-
-      // To check if current user is included, perhaps compare with req.auth.userId
-
-      // Since auth is required, req.auth.userId is the current user.
-
-      // But the param is userId, perhaps it's the same.
-
-      // If the current user is not in leaderboard, fetch their stats and add.
-
-      const currentUserId = req.auth.userId;
-
-      const userInLeaderboard = leaderboard.some(
-        (user) => user.id === currentUserId
-      ); // But leaderboard doesn't have id.
-
-      // The snapshots are keyed by userId, but the leaderboard has username.
-
-      // To check, perhaps need to see if any snapshot has _id === currentUserId.
-
-      // But since fetchLeaderboard gets from Clerk users, and maps to stats, the stats have the userId? No, fetchUserStats returns snapshot, which has username.
-
-      // The snapshot has username, not userId.
-
-      // To ensure current user is included, if not in leaderboard (by username), fetch their stats and add.
-
-      // But since req.auth has username? Clerk user has username.
-
-      // req.auth.userId is the id, but to get username, perhaps fetch from Clerk.
-
-      // This is getting complicated.
-
-      // Since the leaderboard is for all users with data, and the current user has data (since signed in), they should be included.
-
-      // Perhaps the param userId is not needed, as the leaderboard includes all.
-
-      // But the user spec says optional userId to include them.
-
-      // Perhaps if userId provided, and not in results, add them.
-
-      // But since userId is Clerk id, and leaderboard has username, need to map.
-
-      // Perhaps modify fetchLeaderboard to return userId as well.
-
-      // To simplify, since the current implementation should include the user if they have data, and the user says they are signed in but not on leaderboard, perhaps the fetch failed for them.
-
-      // But to follow the spec, let's add the logic.
-
-      // In getLeaderboard, if userId param, fetch the user's stats and add to leaderboard if not present.
-
-      if (userId) {
-        const userStats = await fetchUserStats(userId);
-        if (
-          userStats &&
-          !leaderboard.some((u) => u.username === userStats.username)
-        ) {
-          leaderboard.push(userStats);
-        }
+      const userStats = await fetchUserStats(userId);
+      if (
+        userStats &&
+        !leaderboard.some((u) => u.username === userStats.username)
+      ) {
+        leaderboard.push(userStats);
       }
 
-      // Then sort again.
-
-      // Sort by currentStreak.count descending
       leaderboard = leaderboard.sort((a, b) => {
         const aStreak = a.currentStreak?.count ?? 0;
         const bStreak = b.currentStreak?.count ?? 0;
@@ -118,7 +67,6 @@ export const getLeaderboard = async (req, res) => {
         return a.username.localeCompare(b.username);
       });
 
-      // Reassign ranks
       function getTier(streak) {
         if (streak >= 100) return { label: "Legendary", emoji: "🏆" };
         if (streak >= 30) return { label: "Master", emoji: "🥇" };
@@ -147,9 +95,8 @@ export const getLeaderboard = async (req, res) => {
 
     res.setHeader(
       "Cache-Control",
-      `public, max-age=${cacheTime.BROWSER_CACHE_TIME}`
+      `public, max-age=${cacheTime.BROWSER_CACHE_TIME}`,
     );
-    // Advanced: return all fields for enhanced leaderboard
     res.json({
       success: true,
       data: leaderboard,
@@ -159,8 +106,12 @@ export const getLeaderboard = async (req, res) => {
       },
     });
   } catch (e) {
-    console.log(e);
-    res.status(500).json({ error: "Internal server error" });
+    console.error(e);
+    res.status(500).json({
+      success: false,
+      error: "INTERNAL_ERROR",
+      message: "Internal server error",
+    });
   }
 };
 
@@ -349,7 +300,7 @@ export const sendUserMilestoneEmail = async (email, milestone, stats) => {
     await sendMilestoneEmail(
       email,
       `GitHub Streak Milestone: ${milestone}`,
-      html
+      html,
     );
   } catch (error) {
     console.error("Error sending milestone email:", error);
