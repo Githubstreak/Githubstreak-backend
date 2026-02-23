@@ -65,6 +65,12 @@ export class Database {
     return snapshot;
   }
 
+  async getAllSnapshots() {
+    await this.#checkConn();
+
+    return await this.conn.collection("snapshots").find({}).toArray();
+  }
+
   async getUserFreeze(userId) {
     await this.#checkConn();
 

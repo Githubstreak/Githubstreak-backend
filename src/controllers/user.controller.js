@@ -50,7 +50,12 @@ export const getLeaderboard = async (req, res) => {
 
     const { userId } = req.query;
     if (userId) {
-      const userStats = await fetchUserStats(userId);
+      let userStats = null;
+      try {
+        userStats = await fetchUserStats(userId);
+      } catch (err) {
+        console.error("Failed to fetch stats for userId", userId, err);
+      }
       if (
         userStats &&
         !leaderboard.some((u) => u.username === userStats.username)

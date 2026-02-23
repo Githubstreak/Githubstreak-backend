@@ -230,26 +230,24 @@ export const fetchUserStats = async (userId, { refresh = false } = {}) => {
 };
 
 /**
- * Get users a sorted leaderboard
- * based on users contributions
- * */
+ * Get users a sorted leaderboard based on cached DB snapshots.
+ * Does not trigger any GitHub or Clerk API calls.
+ */
 export const fetchLeaderboard = async () => {
   try {
-    // Get all users from Clerk
-    const usersList = await clerkClient.users.getUserList({ limit: 1000 });
+    const db = Database.getInstance();
+    const snapshots = await db.getAllSnapshots();
 
-    const usersStatsPromise = usersList.data.map((user) =>
-      fetchUserStats(user.id)
+    // Filter out snapshots missing required fields
+    const validSnapshots = snapshots.filter(
+      (s) =>
+        s.username &&
+        s.contributions !== undefined &&
+        s.currentStreak?.count !== undefined
     );
-    const usersStats = await Promise.allSettled(usersStatsPromise);
-
-    // Only fulfilled
-    let leaderboard = usersStats
-      .filter((promise) => promise.status === "fulfilled")
-      .map((promise) => promise.value);
 
     // Sort by currentStreak.count descending, then contributions descending
-    leaderboard = leaderboard.sort((a, b) => {
+    let leaderboard = validSnapshots.sort((a, b) => {
       const aStreak = a.currentStreak?.count ?? 0;
       const bStreak = b.currentStreak?.count ?? 0;
       if (bStreak !== aStreak) return bStreak - aStreak;
@@ -258,7 +256,6 @@ export const fetchLeaderboard = async () => {
       return a.username.localeCompare(b.username);
     });
 
-    // Add rank and other fields
     function getTier(streak) {
       if (streak >= 100) return { label: "Legendary", emoji: "🏆" };
       if (streak >= 30) return { label: "Master", emoji: "🥇" };
